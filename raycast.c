@@ -20,7 +20,7 @@ typedef struct Header {
 // Plymorphism in C
 
 typedef struct {
-  int kind; // 0 = camera, 1 = sphere, 2 = plane
+  int kind; // 0 = camera, 1 = sphere, 2 = plane, 3 = light
   double color[3];
   union {
     struct {
@@ -35,6 +35,15 @@ typedef struct {
       double position[3];
       double normal[3];
     } plane;
+    struct {
+      double position[3];
+      double radial_a0;
+      double radial_a1;
+      double radial_a2;
+      double theta;
+      double angular_a0;
+      double direction[3];
+    } light;
   };
 } Object;
 
