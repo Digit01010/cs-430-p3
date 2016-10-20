@@ -487,7 +487,7 @@ Object** read_scene(char* filename) {
               exit(1);
               break;
             }
-          } else if (strcmp(key, "diffuse color") == 0 || strcmp(key, "color") == 0) {
+          } else if (strcmp(key, "diffuse_color") == 0 || strcmp(key, "color") == 0) {
             double* value = next_vector(json);
             switch (objects[objcnt]->kind) {
             case 0:
@@ -498,6 +498,24 @@ Object** read_scene(char* filename) {
               objects[objcnt]->color[0] = value[0];
               objects[objcnt]->color[1] = value[1];
               objects[objcnt]->color[2] = value[2];
+              break;
+            }
+          } else if (strcmp(key, "specular_color") == 0) {
+            double* value = next_vector(json);
+            switch (objects[objcnt]->kind) {
+            case 1:
+              objects[objcnt]->specular_color[0] = value[0];
+              objects[objcnt]->specular_color[1] = value[1];
+              objects[objcnt]->specular_color[2] = value[2];
+              break;           
+            case 2:            
+              objects[objcnt]->specular_color[0] = value[0];
+              objects[objcnt]->specular_color[1] = value[1];
+              objects[objcnt]->specular_color[2] = value[2];
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
               break;
             }
           } else if (strcmp(key, "position") == 0){
@@ -536,7 +554,87 @@ Object** read_scene(char* filename) {
               exit(1);
               break;
             }
-          } else {
+          } 
+                    /*      double radial_a0;
+      double radial_a1;
+      double radial_a2;
+      double theta;
+      double angular_a0;
+      double direction[3];*/
+          else if (strcmp(key, "radial_a0") == 0) {
+            double value = next_number(json);
+            switch (objects[objcnt]->kind) {
+            case 3:
+              objects[objcnt]->light.radial_a0 = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          } else if (strcmp(key, "radial_a1") == 0) {
+            double value = next_number(json);
+            switch (objects[objcnt]->kind) {
+            case 3:
+              objects[objcnt]->light.radial_a1 = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          }
+          else if (strcmp(key, "radial_a2") == 0) {
+            double value = next_number(json);
+            switch (objects[objcnt]->kind) {
+            case 3:
+              objects[objcnt]->light.radial_a2 = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          }
+          else if (strcmp(key, "theta") == 0) {
+            double value = next_number(json);
+            switch (objects[objcnt]->kind) {
+            case 3:
+              objects[objcnt]->light.radial_a0 = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          }
+          else if (strcmp(key, "angular_a0") == 0) {
+            double value = next_number(json);
+            switch (objects[objcnt]->kind) {
+            case 3:
+              objects[objcnt]->light.radial_a0 = value;
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          }
+          else if (strcmp(key, "direction") == 0) {
+            double* value = next_vector(json);
+            switch (objects[objcnt]->kind) {
+            case 3:
+              objects[objcnt]->light.direction[0] = value[0];
+              objects[objcnt]->light.direction[1] = value[1];
+              objects[objcnt]->light.direction[2] = value[2];
+              break;
+            default:
+              fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
+              exit(1);
+              break;
+            }
+          }
+          else {
             fprintf(stderr, "Error: Unknown property, \"%s\", on line %d.\n",
                     key, line);
             //char* value = next_string(json);
