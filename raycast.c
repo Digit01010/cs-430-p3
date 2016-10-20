@@ -392,6 +392,9 @@ Object** read_scene(char* filename) {
       } else if (strcmp(value, "plane") == 0) {
         objects[objcnt] = malloc(sizeof(Object));
         objects[objcnt]->kind = 2;
+      } else if (strcmp(value, "light") == 0) {
+        objects[objcnt] = malloc(sizeof(Object));
+        objects[objcnt]->kind = 3;
       } else {
         fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
         exit(1);
@@ -407,19 +410,25 @@ Object** read_scene(char* filename) {
           // stop parsing this object
           switch (objects[objcnt]->kind) {
           case 0:
-            if (valcnt != 2) {
+            if (valcnt != 2 ) {
               fprintf(stderr, "Error: Bad value count.");
               exit(1);
             }
             break;
           case 1:
-            if (valcnt != 3) {
+            if (valcnt < 3 || valcnt > 4) {
               fprintf(stderr, "Error: Bad value count.");
               exit(1);
             }
             break;
           case 2:
-            if (valcnt != 3) {
+            if (valcnt < 3 || valcnt > 4) {
+              fprintf(stderr, "Error: Bad value count.");
+              exit(1);
+            }
+            break;
+          case 3:
+            if (valcnt < 6 || valcnt > 7) {
               fprintf(stderr, "Error: Bad value count.");
               exit(1);
             }
