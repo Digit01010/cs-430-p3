@@ -21,7 +21,8 @@ typedef struct Header {
 
 typedef struct {
   int kind; // 0 = camera, 1 = sphere, 2 = plane, 3 = light
-  double color[3];
+  double color[3]; // diffuse color
+  double specular_color[3];
   union {
     struct {
       double width;
