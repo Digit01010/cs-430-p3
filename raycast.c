@@ -23,21 +23,19 @@ typedef struct {
   int kind; // 0 = camera, 1 = sphere, 2 = plane, 3 = light
   double color[3]; // diffuse color
   double specular_color[3];
+  double position[3];
   union {
     struct {
       double width;
       double height;
     } camera;
     struct {
-      double position[3];
       double radius;
     } sphere;
     struct {
-      double position[3];
       double normal[3];
     } plane;
     struct {
-      double position[3];
       double radial_a0;
       double radial_a1;
       double radial_a2;
@@ -149,12 +147,12 @@ int main(int argc, char *argv[]) {
           break;
         case 1:
           t = sphere_intersection(Ro, Rd,
-                                    objects[i]->sphere.position,
+                                    objects[i]->position,
                                     objects[i]->sphere.radius);
           break;
         case 2:
           t = plane_intersection(Ro, Rd,
-                                    objects[i]->plane.position,
+                                    objects[i]->position,
                                     objects[i]->plane.normal);
           break;
         default:
@@ -489,7 +487,7 @@ Object** read_scene(char* filename) {
               exit(1);
               break;
             }
-          } else if (strcmp(key, "color") == 0) {
+          } else if (strcmp(key, "diffuse color") == 0 || strcmp(key, "color") == 0) {
             double* value = next_vector(json);
             switch (objects[objcnt]->kind) {
             case 0:
@@ -506,14 +504,19 @@ Object** read_scene(char* filename) {
             double* value = next_vector(json);
             switch (objects[objcnt]->kind) {
             case 1:
-              objects[objcnt]->sphere.position[0] = value[0];
-              objects[objcnt]->sphere.position[1] = value[1];
-              objects[objcnt]->sphere.position[2] = value[2];
+              objects[objcnt]->position[0] = value[0];
+              objects[objcnt]->position[1] = value[1];
+              objects[objcnt]->position[2] = value[2];
               break;
             case 2:
-              objects[objcnt]->plane.position[0] = value[0];
-              objects[objcnt]->plane.position[1] = value[1];
-              objects[objcnt]->plane.position[2] = value[2];
+              objects[objcnt]->position[0] = value[0];
+              objects[objcnt]->position[1] = value[1];
+              objects[objcnt]->position[2] = value[2];
+              break;
+            case 3:
+              objects[objcnt]->position[0] = value[0];
+              objects[objcnt]->position[1] = value[1];
+              objects[objcnt]->position[2] = value[2];
               break;
             default:
               fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
