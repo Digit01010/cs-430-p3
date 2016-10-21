@@ -175,19 +175,23 @@ int main(int argc, char *argv[]) {
           best_i = i;
         }
       }
+      
+      double* color = malloc(sizeof(double)*3);
+      color[0] = 0; // ambient_color[0];
+      color[1] = 0; // ambient_color[1];
+      color[2] = 0; // ambient_color[2];
+      
       // Note: Going through y in reverse, so adjust index accordingly
       int p = (M - y)*N + x; // Index of buffer
       if (best_t > 0 && best_t != INFINITY) {
         // Scale color values for ppm output
-        buffer[p].red = (char) (objects[best_i]->color[0] * 255);
-        buffer[p].green = (char) (objects[best_i]->color[1] * 255);
-        buffer[p].blue = (char) (objects[best_i]->color[2] * 255);
-      } else {
-        // If there is no intersection, have a black background
-        buffer[p].red = 0;
-        buffer[p].green = 0;
-        buffer[p].blue = 0;
+        color[0] = (char) (objects[best_i]->color[0] * 255);
+        color[1] = (char) (objects[best_i]->color[1] * 255);
+        color[2] = (char) (objects[best_i]->color[2] * 255);
       }
+      buffer[p].red = color[0];
+      buffer[p].green = color[1];
+      buffer[p].blue = color[2];
       
     }
   }
