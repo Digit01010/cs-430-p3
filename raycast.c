@@ -561,7 +561,7 @@ Object** read_scene(char* filename) {
       double theta;
       double angular_a0;
       double direction[3];*/
-          else if (strcmp(key, "radial_a0") == 0) {
+          else if (strcmp(key, "radial-a0") == 0) {
             double value = next_number(json);
             switch (objects[objcnt]->kind) {
             case 3:
@@ -572,7 +572,7 @@ Object** read_scene(char* filename) {
               exit(1);
               break;
             }
-          } else if (strcmp(key, "radial_a1") == 0) {
+          } else if (strcmp(key, "radial-a1") == 0) {
             double value = next_number(json);
             switch (objects[objcnt]->kind) {
             case 3:
@@ -584,7 +584,7 @@ Object** read_scene(char* filename) {
               break;
             }
           }
-          else if (strcmp(key, "radial_a2") == 0) {
+          else if (strcmp(key, "radial-a2") == 0) {
             double value = next_number(json);
             switch (objects[objcnt]->kind) {
             case 3:
@@ -608,7 +608,7 @@ Object** read_scene(char* filename) {
               break;
             }
           }
-          else if (strcmp(key, "angular_a0") == 0) {
+          else if (strcmp(key, "angular-a0") == 0) {
             double value = next_number(json);
             switch (objects[objcnt]->kind) {
             case 3:
