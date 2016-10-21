@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
                      
             double fang;
             double theta = lights[j]->light.theta;
-            if (theta = 0) { // Not a spotlight
+            if (theta == 0) { // Not a spotlight
               fang = 1;
             } else {
               double nRdn[3];
@@ -321,22 +321,16 @@ int main(int argc, char *argv[]) {
             
             double* dc = objects[best_i]->color;
             double* sc = objects[best_i]->specular_color;
+            double* lc = lights[j]->color;
             
-            color[0] += frad * fang * (diffuse*dc[0] + specular*sc[0]);
-            color[1] += frad * fang * (diffuse*dc[1] + specular*sc[1]);
-            color[2] += frad * fang * (diffuse*dc[2] + specular*sc[2]);
+            color[0] += frad * fang * lc[0]*(diffuse*dc[0] + specular*sc[0]);
+            color[1] += frad * fang * lc[1]*(diffuse*dc[1] + specular*sc[1]);
+            color[2] += frad * fang * lc[2]*(diffuse*dc[2] + specular*sc[2]);
           }
         }
         
-        // Note: Going through y in reverse, so adjust index accordingly
-        
-        //if (best_t > 0 && best_t != INFINITY) {
-        //  // Scale color values for ppm output
-        //  color[0] = (char) (objects[best_i]->color[0] * 255);
-        //  color[1] = (char) (objects[best_i]->color[1] * 255);
-        //  color[2] = (char) (objects[best_i]->color[2] * 255);
-        //}
       }
+      // Note: Going through y in reverse, so adjust index accordingly
       int p = (M - y)*N + x; // Index of buffer
       buffer[p].red = (int) (255.0 *  clamp(color[0], 0.0, 1.0));
       buffer[p].green = (int) (255.0 * clamp(color[1], 0.0, 1.0));
@@ -562,6 +556,15 @@ Object** read_scene(char* filename) {
         fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
         exit(1);
       }
+      
+      // Defaults
+      objects[objcnt]->color[0] = 0;
+      objects[objcnt]->color[1] = 0;
+      objects[objcnt]->color[2] = 0;
+
+      objects[objcnt]->specular_color[0] = 1;
+      objects[objcnt]->specular_color[1] = 1;
+      objects[objcnt]->specular_color[2] = 1;
 
       skip_ws(json);
 
@@ -591,7 +594,7 @@ Object** read_scene(char* filename) {
             }
             break;
           case 3:
-            if (valcnt < 6 || valcnt > 7) {
+            if (valcnt < 6 || valcnt > 9) {
               fprintf(stderr, "Error: Bad value count.");
               exit(1);
             }
@@ -759,7 +762,7 @@ Object** read_scene(char* filename) {
             double value = next_number(json);
             switch (objects[objcnt]->kind) {
             case 3:
-              objects[objcnt]->light.radial_a0 = value;
+              objects[objcnt]->light.theta = value;
               break;
             default:
               fprintf(stderr, "Error: Unexpected key on line %d.\n", line);
