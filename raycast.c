@@ -108,7 +108,9 @@ int main(int argc, char *argv[]) {
       lgtcnt++;
     }
   }
-  
+  cameras[camcnt] = NULL;
+  objects[objcnt] = NULL;
+  lights[lgtcnt] = NULL;
 
   // Find the camera and get the height and width  
   if (camcnt == 0) {
