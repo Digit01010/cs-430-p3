@@ -223,12 +223,12 @@ int main(int argc, char *argv[]) {
               t = -1;
               break;
             case 1:
-              t = sphere_intersection(Ro, Rd,
+              t = sphere_intersection(Ron, Rdn,
                                         objects[i]->position,
                                         objects[i]->sphere.radius);
               break;
             case 2:
-              t = plane_intersection(Ro, Rd,
+              t = plane_intersection(Ron, Rdn,
                                         objects[i]->position,
                                         objects[i]->plane.normal);
               break;
@@ -244,23 +244,26 @@ int main(int argc, char *argv[]) {
           
           if (closest_i == -1) {
            // N, L, R, V
+           
             double N[3];
-            switch (objects[closest_i]->kind) {
-            case 1:
-              N[0] = objects[closest_i]->plane.normal[0];
-              N[1] = objects[closest_i]->plane.normal[1];
-              N[2] = objects[closest_i]->plane.normal[2];
-              break;
-            case 2:
-              N[0] = Ro[0] - objects[closest_i]->position[0];
-              N[1] = Ro[1] - objects[closest_i]->position[1];
-              N[2] = Ro[2] - objects[closest_i]->position[2];
-              break;
-            default:
-              fprintf(stderr, "Error: Programmer forgot to implement object normal %d.\n", line);
-              exit(1);
-              break;
+            switch (objects[best_i]->kind) {
+              case 1: // sphere
+                N[0] = Ron[0] - objects[best_i]->position[0];
+                N[1] = Ron[1] - objects[best_i]->position[1];
+                N[2] = Ron[2] - objects[best_i]->position[2];
+                break;
+              case 2: // plane
+                N[0] = objects[best_i]->plane.normal[0];
+                N[1] = objects[best_i]->plane.normal[1];
+                N[2] = objects[best_i]->plane.normal[2];
+                break;
+              default:
+                fprintf(stderr, "Error: Programmer forgot to implement object normal %d.\n", line);
+                exit(1);
+                break;
             }
+            
+            
             normalize(N);
             double* L = Rdn; // light_position - Ron;
             normalize(L);
@@ -270,7 +273,7 @@ int main(int argc, char *argv[]) {
             if (theta = 0) { // Not a spotlight
               fang = 1;
             } else {
-              double* nRdn;
+              double nRdn[3];
               nRdn[0] = -Rdn[0];
               nRdn[1] = -Rdn[1];
               nRdn[2] = -Rdn[2];
@@ -293,7 +296,7 @@ int main(int argc, char *argv[]) {
             
             double NdotL = v3_dot(N, L);
             
-            double diffuse;
+            double diffuse = 0;
             if (NdotL > 0) {
               diffuse = NdotL;
             }
@@ -302,14 +305,15 @@ int main(int argc, char *argv[]) {
             V[0] = -Rd[0];
             V[1] = -Rd[1];
             V[2] = -Rd[2];
+            normalize(V);
             
             double R[3]; // Reflection of L
-            R[0] = R[0] - 2*NdotL*N[0];
-            R[1] = R[1] - 2*NdotL*N[1];
-            R[2] = R[2] - 2*NdotL*N[2];
+            R[0] = L[0] + 2*(NdotL*N[0] - L[0]);
+            R[1] = L[1] + 2*(NdotL*N[1] - L[1]);
+            R[2] = L[2] + 2*(NdotL*N[2] - L[2]);
+            normalize(R);
             
-            
-            double specular;
+            double specular = 0;
             double VdotR = v3_dot(V, R);
             if (VdotR > 0) {
               specular = pow(VdotR, 20);
@@ -318,9 +322,9 @@ int main(int argc, char *argv[]) {
             double* dc = objects[best_i]->color;
             double* sc = objects[best_i]->specular_color;
             
-            color[0] += frad * fang * (diffuse*dc[0] + specular*dc[0]);
-            color[1] += frad * fang * (diffuse*dc[1] + specular*dc[1]);
-            color[2] += frad * fang * (diffuse*dc[2] + specular*dc[2]);
+            color[0] += frad * fang * (diffuse*dc[0] + specular*sc[0]);
+            color[1] += frad * fang * (diffuse*dc[1] + specular*sc[1]);
+            color[2] += frad * fang * (diffuse*dc[2] + specular*sc[2]);
           }
         }
         
@@ -334,9 +338,9 @@ int main(int argc, char *argv[]) {
         //}
       }
       int p = (M - y)*N + x; // Index of buffer
-      buffer[p].red = 255 * (int) clamp(color[0], 0.0, 1.0);
-      buffer[p].green = 255 * (int) clamp(color[1], 0.0, 1.0);
-      buffer[p].blue = 255 * (int) clamp(color[2], 0.0, 1.0);
+      buffer[p].red = (int) (255.0 *  clamp(color[0], 0.0, 1.0));
+      buffer[p].green = (int) (255.0 * clamp(color[1], 0.0, 1.0));
+      buffer[p].blue = (int) (255.0 * clamp(color[2], 0.0, 1.0));
       
     }
   }
