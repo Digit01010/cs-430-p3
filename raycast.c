@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PI 3.14159265
+
 int line = 1;
 
 // Holds an rgb triple of a pixel
@@ -65,6 +67,15 @@ static inline double v3_len(double x, double y, double z) {
   return sqrt(sqr(x) + sqr(y) + sqr(z));
 }
 
+static inline double v3_dot(double* a, double* b) {
+  return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+}
+
+static inline double clamp(double n, double min, double max) {
+  if (n < min) n = min;
+  if (n > max) n = max;
+  return n;
+}
 
 static inline void normalize(double* v) {
   double len = sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
@@ -187,76 +198,145 @@ int main(int argc, char *argv[]) {
       color[1] = 0; // ambient_color[1];
       color[2] = 0; // ambient_color[2];
       
-      
-      for (int j=0; lights[j] != NULL; j++) {
-      // Shadow test
-        double Ron[3] = {0, 0, 0};
-        double Rdn[3] = {0, 0, 0};
-        Ron[0] = best_t * Rd[0] + Ro[0];
-        Ron[1] = best_t * Rd[1] + Ro[1];
-        Ron[2] = best_t * Rd[2] + Ro[2];
-        Rdn[0] = lights[j]->position[0] - Ron[0];
-        Rdn[1] = lights[j]->position[1] - Ron[1];
-        Rdn[2] = lights[j]->position[2] - Ron[2];
-        double lgtdist = v3_len(Rdn[0], Rdn[1], Rdn[2]);
-        normalize(Rdn);
-        int closest_i = -1;
-        double closest_t = INFINITY;
-        //closest_shadow_object = ...;
-        for (int i=0; objects[i] != NULL; i += 1) {
-          double t = 0;
-          if (i == best_i) continue; // Skip own object
-          // Call correct intersection function
-          switch(objects[i]->kind) {
-          case 0:
-            t = -1;
-            break;
-          case 1:
-            t = sphere_intersection(Ro, Rd,
-                                      objects[i]->position,
-                                      objects[i]->sphere.radius);
-            break;
-          case 2:
-            t = plane_intersection(Ro, Rd,
-                                      objects[i]->position,
-                                      objects[i]->plane.normal);
-            break;
-          default:
-            fprintf(stderr, "Error: Programmer forgot to implement an intersection in light test.");
-            exit(1);
+      if (best_t > 0 && best_t != INFINITY) {
+        for (int j=0; lights[j] != NULL; j++) {
+        // Shadow test
+          double Ron[3] = {0, 0, 0};
+          double Rdn[3] = {0, 0, 0};
+          Ron[0] = best_t * Rd[0] + Ro[0];
+          Ron[1] = best_t * Rd[1] + Ro[1];
+          Ron[2] = best_t * Rd[2] + Ro[2];
+          Rdn[0] = lights[j]->position[0] - Ron[0];
+          Rdn[1] = lights[j]->position[1] - Ron[1];
+          Rdn[2] = lights[j]->position[2] - Ron[2];
+          double lgtdist = v3_len(Rdn[0], Rdn[1], Rdn[2]);
+          normalize(Rdn);
+          int closest_i = -1;
+          double closest_t = INFINITY;
+          //closest_shadow_object = ...;
+          for (int i=0; objects[i] != NULL; i += 1) {
+            double t = 0;
+            if (i == best_i) continue; // Skip own object
+            // Call correct intersection function
+            switch(objects[i]->kind) {
+            case 0:
+              t = -1;
+              break;
+            case 1:
+              t = sphere_intersection(Ro, Rd,
+                                        objects[i]->position,
+                                        objects[i]->sphere.radius);
+              break;
+            case 2:
+              t = plane_intersection(Ro, Rd,
+                                        objects[i]->position,
+                                        objects[i]->plane.normal);
+              break;
+            default:
+              fprintf(stderr, "Error: Programmer forgot to implement an intersection in light test.");
+              exit(1);
+            }
+            if (t > 0 && t < lgtdist) {
+              closest_t = t;
+              closest_i = i;
+            }
           }
-          if (t > 0 && t < lghtdist) {
-            closest_t = t;
-            closest_i = i;
+          
+          if (closest_i == -1) {
+           // N, L, R, V
+            double N[3];
+            switch (objects[closest_i]->kind) {
+            case 1:
+              N[0] = objects[closest_i]->plane.normal[0];
+              N[1] = objects[closest_i]->plane.normal[1];
+              N[2] = objects[closest_i]->plane.normal[2];
+              break;
+            case 2:
+              N[0] = Ro[0] - objects[closest_i]->position[0];
+              N[1] = Ro[1] - objects[closest_i]->position[1];
+              N[2] = Ro[2] - objects[closest_i]->position[2];
+              break;
+            default:
+              fprintf(stderr, "Error: Programmer forgot to implement object normal %d.\n", line);
+              exit(1);
+              break;
+            }
+            normalize(N);
+            double* L = Rdn; // light_position - Ron;
+            normalize(L);
+                     
+            double fang;
+            double theta = lights[j]->light.theta;
+            if (theta = 0) { // Not a spotlight
+              fang = 1;
+            } else {
+              double* nRdn;
+              nRdn[0] = -Rdn[0];
+              nRdn[1] = -Rdn[1];
+              nRdn[2] = -Rdn[2];
+              normalize(nRdn);
+              normalize(lights[j]->light.direction);
+              double cos_a = v3_dot(lights[j]->light.direction, nRdn);
+              if (cos_a < cos(theta*PI/180.0)) {
+                fang = 0;
+              }
+              else {
+                fang = pow(cos_a, lights[j]->light.angular_a0);
+              }
+            }
+            
+            
+            double a_0 = lights[j]->light.radial_a0;
+            double a_1 = lights[j]->light.radial_a0;
+            double a_2 = lights[j]->light.radial_a0;
+            double frad = 1/(a_0 + a_1 * lgtdist + a_2 * sqr(lgtdist));
+            
+            double NdotL = v3_dot(N, L);
+            
+            double diffuse;
+            if (NdotL > 0) {
+              diffuse = NdotL;
+            }
+            
+            double V[3];
+            V[0] = -Rd[0];
+            V[1] = -Rd[1];
+            V[2] = -Rd[2];
+            
+            double R[3]; // Reflection of L
+            R[0] = R[0] - 2*NdotL*N[0];
+            R[1] = R[1] - 2*NdotL*N[1];
+            R[2] = R[2] - 2*NdotL*N[2];
+            
+            
+            double specular;
+            double VdotR = v3_dot(V, R);
+            if (VdotR > 0) {
+              specular = pow(VdotR, 20);
+            }
+            
+            double* dc = objects[best_i]->color;
+            double* sc = objects[best_i]->specular_color;
+            
+            color[0] += frad * fang * (diffuse*dc[0] + specular*dc[0]);
+            color[1] += frad * fang * (diffuse*dc[1] + specular*dc[1]);
+            color[2] += frad * fang * (diffuse*dc[2] + specular*dc[2]);
           }
         }
-        /*
-        if (closest_shadow_object == NULL) {
-         // N, L, R, V
-          N = closest_object->normal; // plane
-          N = Ron - closest_object->center; // sphere
-          L = Rdn; // light_position - Ron;
-          R = reflection of L;
-          V = Rd;
-          diffuse = ...; // uses object's diffuse color
-          specular = ...; // uses object's specular color
-          color[0] += frad() * fang() * (diffuse + specular);
-          color[1] += frad() * fang() * (diffuse + specular);
-          color[2] += frad() * fang() * (diffuse + specular);
-        }*/
+        
+        // Note: Going through y in reverse, so adjust index accordingly
+        
+        //if (best_t > 0 && best_t != INFINITY) {
+        //  // Scale color values for ppm output
+        //  color[0] = (char) (objects[best_i]->color[0] * 255);
+        //  color[1] = (char) (objects[best_i]->color[1] * 255);
+        //  color[2] = (char) (objects[best_i]->color[2] * 255);
+        //}
       }
-      
-      // Note: Going through y in reverse, so adjust index accordingly
       int p = (M - y)*N + x; // Index of buffer
-      if (best_t > 0 && best_t != INFINITY) {
-        // Scale color values for ppm output
-        color[0] = (char) (objects[best_i]->color[0] * 255);
-        color[1] = (char) (objects[best_i]->color[1] * 255);
-        color[2] = (char) (objects[best_i]->color[2] * 255);
-      }
-      buffer[p].red = color[0];
-      buffer[p].green = color[1];
-      buffer[p].blue = color[2];
+      buffer[p].red = 255 * (int) clamp(color[0], 0.0, 1.0);
+      buffer[p].green = 255 * (int) clamp(color[1], 0.0, 1.0);
+      buffer[p].blue = 255 * (int) clamp(color[2], 0.0, 1.0);
       
     }
   }
@@ -473,6 +553,7 @@ Object** read_scene(char* filename) {
       } else if (strcmp(value, "light") == 0) {
         objects[objcnt] = malloc(sizeof(Object));
         objects[objcnt]->kind = 3;
+        objects[objcnt]->light.theta = 0; // Must be zero if a point light
       } else {
         fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
         exit(1);
