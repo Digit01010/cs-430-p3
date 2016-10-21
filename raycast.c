@@ -86,36 +86,47 @@ int main(int argc, char *argv[]) {
   }
   
   // Read the scene file
-  Object** objects = read_scene(argv[3]);
+
   
-  double cx = 0;
-  double cy = 0;
+  Object** cameras = malloc(sizeof(Object*)*129);
+  Object** objects = malloc(sizeof(Object*)*129);
+  Object** lights = malloc(sizeof(Object*)*129);
   
-  double h;
-  double w;
-  
-  // Find the camera and get the height and width
-  int cur = 0;
-  int cam = 0;
-  while (objects[cur] != NULL) {
-    if (objects[cur]->kind == 0) {
-      h = objects[cur]->camera.height;
-      w = objects[cur]->camera.width;
-      cam += 1;
+  Object** json_objects = read_scene(argv[3]);
+  int camcnt = 0;
+  int objcnt = 0;
+  int lgtcnt = 0;
+  for (int i = 0; json_objects[i] != NULL; i++) {
+    if (json_objects[i]->kind == 0) {
+      cameras[camcnt] = json_objects[i];
+      camcnt++;
+    } else if (json_objects[i]->kind == 1 || json_objects[i]->kind == 2) {
+      objects[objcnt] = json_objects[i];
+      objcnt++;
+    } else if (json_objects[i]->kind == 3) {
+      lights[lgtcnt] = json_objects[i];
+      lgtcnt++;
     }
-    cur += 1;
   }
   
-  if (cam = 0) {
+
+  // Find the camera and get the height and width  
+  if (camcnt == 0) {
     fprintf(stderr, "Error: No camera found.\n");
     exit(1);
   }
   
-  if (cam > 1) {
+  if (camcnt > 1) {
     fprintf(stderr, "Error: Multiple cameras not supported.\n");
     exit(1);
   }
   
+  double cx = 0;
+  double cy = 0;
+  
+  double h = cameras[0]->camera.height;
+  double w = cameras[0]->camera.width;
+   
   // Initialize pixel buffer
   Pixel *buffer = malloc(sizeof(Pixel) * N * M);
   
@@ -555,12 +566,6 @@ Object** read_scene(char* filename) {
               break;
             }
           } 
-                    /*      double radial_a0;
-      double radial_a1;
-      double radial_a2;
-      double theta;
-      double angular_a0;
-      double direction[3];*/
           else if (strcmp(key, "radial-a0") == 0) {
             double value = next_number(json);
             switch (objects[objcnt]->kind) {
