@@ -198,12 +198,14 @@ int main(int argc, char *argv[]) {
         Rdn[0] = lights[j]->position[0] - Ron[0];
         Rdn[1] = lights[j]->position[1] - Ron[1];
         Rdn[2] = lights[j]->position[2] - Ron[2];
+        double lgtdist = v3_len(Rdn[0], Rdn[1], Rdn[2]);
+        normalize(Rdn);
         int closest_i = -1;
         double closest_t = INFINITY;
         //closest_shadow_object = ...;
         for (int i=0; objects[i] != NULL; i += 1) {
           double t = 0;
-          if (i == best_i) continue;
+          if (i == best_i) continue; // Skip own object
           // Call correct intersection function
           switch(objects[i]->kind) {
           case 0:
