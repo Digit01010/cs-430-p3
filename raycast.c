@@ -183,12 +183,44 @@ int main(int argc, char *argv[]) {
       color[1] = 0; // ambient_color[1];
       color[2] = 0; // ambient_color[2];
       
-      /*
-      for (int j=0; light[j] != NULL; j+=1) {
+      
+      for (int j=0; lights[j] != NULL; j++) {
       // Shadow test
-        Ron = closest_t * Rd + Ro;
-        Rdn = light_position - Ron;
-        closest_shadow_object = ...;
+        double Ron[3] = {0, 0, 0};
+        double Rdn[3] = {0, 0, 0};
+        Ron[0] = best_t * Rd[0] + Ro[0];
+        Ron[1] = best_t * Rd[1] + Ro[1];
+        Ron[2] = best_t * Rd[2] + Ro[2];
+        Rdn[0] = lights[j]->position[0] - Ron[0];
+        Rdn[1] = lights[j]->position[1] - Ron[1];
+        Rdn[2] = lights[j]->position[2] - Ron[2];
+        /*closest_shadow_object = ...;
+        for (int i=0; objects[i] != NULL; i += 1) {
+        double t = 0;
+        // Call correct intersection function
+        switch(objects[i]->kind) {
+        case 0:
+          t = -1;
+          break;
+        case 1:
+          t = sphere_intersection(Ro, Rd,
+                                    objects[i]->position,
+                                    objects[i]->sphere.radius);
+          break;
+        case 2:
+          t = plane_intersection(Ro, Rd,
+                                    objects[i]->position,
+                                    objects[i]->plane.normal);
+          break;
+        default:
+          fprintf(stderr, "Error: Programmer forgot to implement an intersection.");
+          exit(1);
+        }
+        if (t > 0 && t < best_t) {
+          best_t = t;
+          best_i = i;
+        }
+      }
         for (int k=0; object[k] != NULL; k+=1) {
           if (object[k] == closest_object) continue;
     // 
@@ -206,7 +238,8 @@ int main(int argc, char *argv[]) {
         if (best_t > distance_to_light) {
           continue;
         }
-      }
+      }*/
+      /*
       if (closest_shadow_object == NULL) {
          // N, L, R, V
          N = closest_object->normal; // plane
@@ -219,8 +252,8 @@ int main(int argc, char *argv[]) {
          color[0] += frad() * fang() * (diffuse + specular);
         color[1] += frad() * fang() * (diffuse + specular);
          color[2] += frad() * fang() * (diffuse + specular);
-        }
-      }*/
+        }*/
+      }
       
       // Note: Going through y in reverse, so adjust index accordingly
       int p = (M - y)*N + x; // Index of buffer
