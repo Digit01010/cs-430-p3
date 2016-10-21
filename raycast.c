@@ -183,6 +183,45 @@ int main(int argc, char *argv[]) {
       color[1] = 0; // ambient_color[1];
       color[2] = 0; // ambient_color[2];
       
+      /*
+      for (int j=0; light[j] != NULL; j+=1) {
+      // Shadow test
+        Ron = closest_t * Rd + Ro;
+        Rdn = light_position - Ron;
+        closest_shadow_object = ...;
+        for (int k=0; object[k] != NULL; k+=1) {
+          if (object[k] == closest_object) continue;
+    // 
+          switch(...) {
+          case SPHERE:
+            t = sphere_intersect(..);
+            break;
+          case PLANE:
+            t = plane_intersect(..);
+            break;
+          default:
+            // ERROR
+            break;
+          }
+        if (best_t > distance_to_light) {
+          continue;
+        }
+      }
+      if (closest_shadow_object == NULL) {
+         // N, L, R, V
+         N = closest_object->normal; // plane
+         N = Ron - closest_object->center; // sphere
+         L = Rdn; // light_position - Ron;
+         R = reflection of L;
+         V = Rd;
+         diffuse = ...; // uses object's diffuse color
+         specular = ...; // uses object's specular color
+         color[0] += frad() * fang() * (diffuse + specular);
+        color[1] += frad() * fang() * (diffuse + specular);
+         color[2] += frad() * fang() * (diffuse + specular);
+        }
+      }*/
+      
       // Note: Going through y in reverse, so adjust index accordingly
       int p = (M - y)*N + x; // Index of buffer
       if (best_t > 0 && best_t != INFINITY) {
