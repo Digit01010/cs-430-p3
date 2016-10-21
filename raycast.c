@@ -61,6 +61,10 @@ static inline double sqr(double v) {
   return v*v;
 }
 
+static inline double v3_len(double x, double y, double z) {
+  return sqrt(sqr(x) + sqr(y) + sqr(z));
+}
+
 
 static inline void normalize(double* v) {
   double len = sqrt(sqr(v[0]) + sqr(v[1]) + sqr(v[2]));
@@ -194,33 +198,37 @@ int main(int argc, char *argv[]) {
         Rdn[0] = lights[j]->position[0] - Ron[0];
         Rdn[1] = lights[j]->position[1] - Ron[1];
         Rdn[2] = lights[j]->position[2] - Ron[2];
-        /*closest_shadow_object = ...;
+        int closest_i = -1;
+        double closest_t = INFINITY;
+        //closest_shadow_object = ...;
         for (int i=0; objects[i] != NULL; i += 1) {
-        double t = 0;
-        // Call correct intersection function
-        switch(objects[i]->kind) {
-        case 0:
-          t = -1;
-          break;
-        case 1:
-          t = sphere_intersection(Ro, Rd,
-                                    objects[i]->position,
-                                    objects[i]->sphere.radius);
-          break;
-        case 2:
-          t = plane_intersection(Ro, Rd,
-                                    objects[i]->position,
-                                    objects[i]->plane.normal);
-          break;
-        default:
-          fprintf(stderr, "Error: Programmer forgot to implement an intersection.");
-          exit(1);
-        }
-        if (t > 0 && t < best_t) {
-          best_t = t;
-          best_i = i;
-        }
+          double t = 0;
+          if (i == best_i) continue;
+          // Call correct intersection function
+          switch(objects[i]->kind) {
+          case 0:
+            t = -1;
+            break;
+          case 1:
+            t = sphere_intersection(Ro, Rd,
+                                      objects[i]->position,
+                                      objects[i]->sphere.radius);
+            break;
+          case 2:
+            t = plane_intersection(Ro, Rd,
+                                      objects[i]->position,
+                                      objects[i]->plane.normal);
+            break;
+          default:
+            fprintf(stderr, "Error: Programmer forgot to implement an intersection in light test.");
+            exit(1);
+          }
+          if (t > 0 && t < best_t) {
+            closest_t = t;
+            closest_i = i;
+          }
       }
+      /*
         for (int k=0; object[k] != NULL; k+=1) {
           if (object[k] == closest_object) continue;
     // 
