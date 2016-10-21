@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
       double best_t = INFINITY;
       int best_i = 0;
       // Check intersections
-      for (int i=0; objects[i] != 0; i += 1) {
+      for (int i=0; objects[i] != NULL; i += 1) {
         double t = 0;
         // Call correct intersection function
         switch(objects[i]->kind) {
